@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Rohit Kota (RK): computer vision and platform engineer in Abu Dhabi. I make cameras notice trouble before anyone gets hurt.">
+<meta property="og:title" content="Rohit Kota">
+<meta property="og:description" content="Computer vision and platform engineer. 70+ sites switched on, 2,400 cameras, one person in the middle of it.">
+<meta name="theme-color" content="#0a0e12">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0e12'/%3E%3Crect x='7' y='7' width='18' height='18' fill='none' stroke='%23f0a73a' stroke-width='2'/%3E%3Crect x='12' y='12' width='8' height='8' fill='%23f0a73a'/%3E%3C/svg%3E">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Rohit Kota</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: a control-room console. Full-bleed dark ground, a HUD strip on top, then stacked "panels"
+   with hairline frames and corner brackets. Everything labelled like a camera feed overlay. */
+:root{
+  --bg:#0a0e12;          /* graphite with a blue bias */
+  --panel:#10161b;
+  --panel-2:#161e25;
+  --line:#26323b;
+  --line-soft:#1b252d;
+  --fg:#e7e2d7;          /* warm off-white, like a phosphor readout */
+  --muted:#8a969e;
+  --amber:#f0a73a;
+  --amber-ink:#2a1c08;
+  --amber-glow:rgba(240,167,58,.16);
+  --teal:#43b8a2;        /* status: OK */
+  --red:#e4583f;         /* status: alert / REC */
+  --display:"Big Shoulders Display","Barlow Condensed","Arial Narrow",sans-serif;
+  --body:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono","SFMono-Regular",Menlo,Consolas,monospace;
+  --gutter:clamp(16px,4vw,48px);
+  --maxw:1180px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--fg);
+  font-family:var(--body);font-size:16px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+a{color:inherit}
+h1,h2,h3{margin:0;font-family:var(--display);text-wrap:balance;line-height:.95;text-transform:uppercase;letter-spacing:.01em}
+p{margin:0}
+.wrap{max-width:var(--maxw);margin-inline:auto;padding-inline:var(--gutter)}
+.mono{font-family:var(--mono)}
+.label{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.label b{color:var(--amber);font-weight:500}
+
+/* HUD strip */
+.hud{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:rgba(10,14,18,.86);backdrop-filter:blur(8px);border-bottom:1px solid var(--line-soft)}
+.hud .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:52px}
+.hud .brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.hud .brand .tag{font-family:var(--display);font-weight:800;font-size:1.35rem;letter-spacing:.04em}
+.hud .brand .dot{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 3px rgba(67,184,162,.18)}
+.hud nav{display:flex;gap:4px}
+.hud nav a{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:2px}
+.hud nav a:hover,.hud nav a:focus-visible{color:var(--fg);background:var(--panel-2);outline:none}
+.hud .clock{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.hud .clock b{color:var(--fg);font-weight:500}
+@media (max-width:760px){.hud nav{display:none}.hud .clock{display:none}}
+
+/* panels with corner brackets */
+.panel{position:relative;background:var(--panel);border:1px solid var(--line)}
+.panel::before,.panel::after,.panel>.c::before,.panel>.c::after{content:"";position:absolute;width:12px;height:12px;border:2px solid var(--amber);pointer-events:none}
+.panel::before{top:-1px;left:-1px;border-right:0;border-bottom:0}
+.panel::after{top:-1px;right:-1px;border-left:0;border-bottom:0}
+.panel>.c::before{bottom:-1px;left:-1px;border-right:0;border-top:0}
+.panel>.c::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
+
+section{padding-block:clamp(48px,8vw,96px)}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:28px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.sec-head h2{font-size:clamp(1.9rem,4vw,2.8rem);font-weight:800}
+.sec-head .label{text-align:right}
+
+/* HERO */
+.hero{padding-block:clamp(40px,7vw,88px) clamp(32px,5vw,64px)}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:center}
+@media (max-width:900px){.hero .wrap{grid-template-columns:1fr}}
+.nameplate{display:inline-grid;grid-template-columns:auto auto;gap:4px 18px;padding:10px 14px;border:1px solid var(--line);background:var(--panel);font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:26px}
+.nameplate span:nth-child(odd){color:var(--amber)}
+.nameplate span:nth-child(even){color:var(--fg)}
+.hero h1{font-size:clamp(2.8rem,7.4vw,5.8rem);font-weight:900;line-height:.88;letter-spacing:.005em}
+.hero h1 em{font-style:normal;color:var(--amber)}
+.hero .lede{max-width:34rem;margin-top:24px;color:#c9c3b8;font-size:1.06rem}
+.hero .lede strong{color:var(--fg);font-weight:600}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:12px 18px;border:1px solid var(--amber);font-family:var(--mono);font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;color:var(--amber);background:transparent;cursor:pointer;transition:background .15s,color .15s}
+.btn:hover,.btn:focus-visible{background:var(--amber);color:var(--amber-ink);outline:none}
+.btn.solid{background:var(--amber);color:var(--amber-ink)}
+.btn.solid:hover,.btn.solid:focus-visible{background:#ffbf5c}
+.btn.ghost{border-color:var(--line);color:var(--fg)}
+.btn.ghost:hover,.btn.ghost:focus-visible{background:var(--panel-2);color:var(--fg)}
+
+/* camera feed */
+.feed{aspect-ratio:4/3;max-width:100%;position:relative;overflow:hidden;background:#05080b}
+.feed canvas{display:block;width:100%;height:100%}
+.feed .ov{position:absolute;inset:0;pointer-events:none;font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(231,226,215,.85)}
+.feed .ov .tl{position:absolute;top:12px;left:14px}
+.feed .ov .tr{position:absolute;top:12px;right:14px;display:flex;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
+.feed .ov .tr i{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);animation:blink 1.4s steps(1) infinite}
+.feed .ov .bl{position:absolute;bottom:12px;left:14px;color:var(--muted);max-width:46%;line-height:1.4}
+.feed .ov .br{position:absolute;bottom:12px;right:14px;color:var(--teal);max-width:46%;text-align:right;line-height:1.4}
+.feed .scan{position:absolute;left:0;right:0;height:38%;background:linear-gradient(to bottom,transparent,rgba(240,167,58,.05),transparent);animation:scan 6s linear infinite;pointer-events:none}
+@keyframes blink{50%{opacity:.2}}
+@keyframes scan{from{top:-40%}to{top:110%}}
+@media (prefers-reduced-motion:reduce){.feed .ov .tr i,.feed .scan{animation:none}}
+
+/* FLEET BOARD */
+.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--line);background:var(--line)}
+.board>div{background:var(--panel);padding:22px 20px 18px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.board .n{font-family:var(--display);font-weight:800;font-size:clamp(2.4rem,5vw,3.6rem);line-height:1;color:var(--fg);font-variant-numeric:tabular-nums}
+.board .n small{font-size:.5em;color:var(--amber);vertical-align:top;margin-left:2px}
+.board .t{font-size:.9rem;color:#c9c3b8}
+@media (max-width:900px){.board{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.board-note{margin-top:14px;font-size:.82rem;color:var(--muted);max-width:60rem}
+.board-note a{color:var(--muted)}
+
+/* TOPOLOGY */
+.topo{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:clamp(20px,3vw,40px);align-items:stretch}
+@media (max-width:900px){.topo{grid-template-columns:1fr}}
+.topo .panel{padding:14px;min-width:0}
+.topo svg{display:block;width:100%;height:auto;max-width:100%}
+.topo .legend{display:flex;flex-wrap:wrap;gap:14px;padding:10px 4px 0;font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.topo .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;vertical-align:-1px;margin-right:6px}
+.stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+.stack h3{font-size:1.6rem;font-weight:700}
+.stack p{color:#c9c3b8}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 16px;font-size:.92rem;font-family:var(--mono);font-size:.78rem;letter-spacing:.02em}
+.kv dt{color:var(--amber);text-transform:uppercase;letter-spacing:.1em;font-size:.7rem;padding-top:3px;white-space:nowrap}
+.kv dd{margin:0;color:var(--fg);min-width:0}
+
+/* PIPELINE */
+.pipe{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+.pipe>div{background:var(--panel);padding:18px 16px 20px;display:flex;flex-direction:column;gap:10px;min-width:0;position:relative}
+.pipe .step{font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;color:var(--amber)}
+.pipe h3{font-size:1.35rem;font-weight:700;line-height:1}
+.pipe p{font-size:.86rem;color:#c0bab0}
+.pipe>div::after{content:"";position:absolute;right:-5px;top:50%;width:8px;height:8px;border-top:1px solid var(--amber);border-right:1px solid var(--amber);transform:translateY(-50%) rotate(45deg);background:var(--panel);z-index:1}
+.pipe>div:last-child::after{display:none}
+@media (max-width:1000px){.pipe{grid-template-columns:repeat(3,minmax(0,1fr))}.pipe>div:nth-child(3)::after{display:none}}
+@media (max-width:600px){.pipe{grid-template-columns:1fr}.pipe>div::after{display:none}}
+
+/* EXPERIENCE LOG */
+.log{display:flex;flex-direction:column;gap:22px}
+.entry{display:grid;grid-template-columns:200px minmax(0,1fr);gap:0;border:1px solid var(--line);background:var(--panel)}
+@media (max-width:760px){.entry{grid-template-columns:1fr}}
+.entry .meta{padding:22px 20px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:12px;font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+@media (max-width:760px){.entry .meta{border-right:0;border-bottom:1px solid var(--line);flex-direction:row;flex-wrap:wrap;gap:8px 18px}}
+.entry .meta .when{color:var(--fg);font-size:.8rem}
+.entry .meta .where{color:var(--muted)}
+.entry .meta .state{display:inline-flex;align-items:center;gap:7px;color:var(--teal)}
+.entry .meta .state i{width:7px;height:7px;border-radius:50%;background:currentColor}
+.entry .meta .state.done{color:var(--muted)}
+.entry .body{padding:22px 24px 20px;min-width:0}
+.entry h3{font-size:clamp(1.5rem,2.6vw,2rem);font-weight:800}
+.entry .org{margin-top:6px;color:var(--amber);font-family:var(--mono);font-size:.78rem;letter-spacing:.06em}
+.entry .sum{margin-top:14px;color:#c9c3b8;max-width:62rem}
+.hl{list-style:none;padding:0;margin:18px 0 0;display:grid;gap:10px}
+.hl li{position:relative;padding-left:22px;color:#d9d3c8;font-size:.95rem}
+.hl li::before{content:"";position:absolute;left:0;top:.62em;width:10px;height:1px;background:var(--amber)}
+.hl li b{color:var(--fg);font-weight:600}
+details{margin-top:16px;border-top:1px dashed var(--line)}
+summary{cursor:pointer;list-style:none;padding:12px 0 4px;font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);display:flex;align-items:center;gap:10px}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"+";display:inline-grid;place-items:center;width:16px;height:16px;border:1px solid var(--amber);font-size:.8rem;line-height:1}
+details[open] summary::before{content:"–"}
+summary:focus-visible{outline:1px solid var(--amber);outline-offset:4px}
+.rec{padding:8px 0 6px;display:grid;gap:18px}
+.rec h4{margin:0 0 8px;font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.rec ul{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.rec li{position:relative;padding-left:18px;font-size:.9rem;color:#c0bab0}
+.rec li::before{content:"";position:absolute;left:0;top:.66em;width:6px;height:1px;background:var(--muted)}
+
+/* SKILLS RACK */
+.rack{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:760px){.rack{grid-template-columns:1fr}}
+.rack .panel{padding:18px 18px 16px}
+.rack h3{font-size:1.25rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.rack h3 span{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;color:var(--muted);font-weight:500;text-transform:uppercase}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{font-family:var(--mono);font-size:.74rem;padding:5px 9px;border:1px solid var(--line);background:var(--panel-2);color:#d9d3c8;white-space:nowrap}
+.chips span.hot{border-color:rgba(240,167,58,.5);background:var(--amber-glow);color:var(--fg)}
+
+/* PROJECTS + PUBLICATION */
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+@media (max-width:900px){.grid3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.grid3{grid-template-columns:1fr}}
+.grid3>div{background:var(--panel);padding:18px;min-width:0;display:flex;flex-direction:column;gap:8px}
+.grid3 h3{font-size:1.3rem;font-weight:700}
+.grid3 p{font-size:.88rem;color:#c0bab0}
+.grid3 .lang{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
+.pub{margin-top:16px;padding:22px 24px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px 28px;align-items:center}
+@media (max-width:760px){.pub{grid-template-columns:1fr}}
+.pub h3{font-size:1.5rem;font-weight:700}
+.pub p{margin-top:8px;color:#c9c3b8;font-size:.92rem;max-width:60rem}
+.pub .venue{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin-bottom:8px}
+
+/* CONTACT */
+.contact .wrap>.panel{padding:clamp(24px,4vw,44px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:860px){.contact .wrap>.panel{grid-template-columns:1fr}}
+.contact h2{font-size:clamp(2.4rem,6vw,4.4rem);font-weight:900;line-height:.9}
+.contact h2 em{font-style:normal;color:var(--amber)}
+.contact .note{margin-top:18px;color:#c9c3b8;max-width:34rem}
+.lines{display:grid;gap:10px;min-width:0}
+.line{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;padding:12px 14px;border:1px solid var(--line);background:var(--panel-2);min-width:0}
+.line .k{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);width:52px}
+.line .v{font-family:var(--mono);font-size:.9rem;color:var(--fg);overflow-wrap:anywhere;min-width:0;text-decoration:none}
+.line a.v:hover{color:var(--amber)}
+.copy{appearance:none;border:1px solid var(--line);background:transparent;color:var(--muted);font-family:var(--mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;padding:6px 9px;cursor:pointer;white-space:nowrap}
+.copy:hover,.copy:focus-visible{border-color:var(--amber);color:var(--amber);outline:none}
+.copy.ok{border-color:var(--teal);color:var(--teal)}
+
+footer{border-top:1px solid var(--line-soft);padding-block:22px 36px}
+footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+/* ETHOS */
+.ethos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:860px){.ethos{grid-template-columns:1fr}}
+.ethos .panel{padding:22px 20px 20px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.ethos .step{font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;color:var(--amber)}
+.ethos h3{font-size:1.6rem;font-weight:800}
+.ethos p{color:#c9c3b8;font-size:.95rem}
+</style>
+
+<header class="hud">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Back to top"><span class="dot" aria-hidden="true"></span><span class="tag">RK</span><span class="label">// rohit kota</span></a>
+    <nav aria-label="Sections">
+      <a href="#numbers">Numbers</a><a href="#where">Where</a><a href="#how">How</a><a href="#me">Me</a><a href="#story">Story</a><a href="#toolbox">Toolbox</a><a href="#builds">Builds</a><a href="#contact">Say hi</a>
+    </nav>
+    <div class="clock" aria-live="off">ABU DHABI <b id="clk">--:--:--</b> GST</div>
+  </div>
+</header>
+
+<main id="top">
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <div class="nameplate" aria-label="Identity plate">
+        <span>Name</span><span>Rohit Kota, RK to most people</span>
+        <span>Does</span><span>Computer vision, out in the field</span>
+        <span>From</span><span>Pune → Abu Dhabi</span>
+        <span>Mode</span><span style="color:var(--teal)">Learning fast · shipping faster</span>
+      </div>
+      <h1>I make cameras<br>notice trouble<br><em>before anyone<br>gets hurt.</em></h1>
+      <p class="lede">Two years ago I was writing C for a storage system in Pune. Today I'm on drilling rigs and offshore platforms in the UAE, helping ADNOC's safety teams run AI on their CCTV. <strong>I didn't plan that jump. I said yes, learned on the move, and kept shipping.</strong> That's roughly how I do everything.</p>
+      <div class="cta">
+        <a class="btn solid" href="#contact">Say hi</a>
+        <a class="btn" href="rohit-kota-cv.pdf" target="_blank" rel="noopener">The formal CV</a>
+        <a class="btn ghost" href="https://github.com/rohitkota007" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+    </div>
+    <div class="panel feed" aria-label="Stylised illustration of a camera feed with detection boxes" role="img">
+      <canvas id="feed"></canvas>
+      <div class="scan"></div>
+      <div class="ov">
+        <div class="tl">CAM-07 · RIG FLOOR · 25 FPS</div>
+        <div class="tr"><i></i><span id="feedclk">REC 00:00:00</span></div>
+        <div class="bl">Simulated feed, drawn in code</div>
+        <div class="br" id="feedstat">EDGE-A · GPU 61% · SYNC OK</div>
+      </div>
+      <span class="c"></span>
+    </div>
+  </div>
+</section>
+
+<section id="numbers">
+  <div class="wrap">
+    <div class="sec-head"><h2>The short version</h2><span class="label">A year and a bit on the rigs, <b>two and a half</b> on storage</span></div>
+    <div class="board">
+      <div><span class="n">70<small>+</small></span><span class="t">Sites I've helped switch on in a year, from desert rigs to offshore platforms</span></div>
+      <div><span class="n">8</span><span class="t">Business units I work with, each with its own people, risks and quirks</span></div>
+      <div><span class="n">2,400</span><span class="t">Cameras watching over 200 sites through the platform I help run day to day</span></div>
+      <div><span class="n">99<small>%</small></span><span class="t">Uptime we hold the central GPU cluster to. Rigs don't pause for maintenance</span></div>
+      <div><span class="n">800<small>+</small></span><span class="t">People who log in through the single sign-on I wired up</span></div>
+      <div><span class="n">$4M<small>/yr</small></span><span class="t">What our team saved Rakuten by building an object store instead of paying for MinIO</span></div>
+      <div><span class="n">90<small>%</small></span><span class="t">How much I shrank a container image after a customer flagged its size as a security risk</span></div>
+      <div><span class="n">2</span><span class="t">Stages I've demoed the platform on so far: GITEX and ADIPEC</span></div>
+    </div>
+    <p class="board-note">The platform is called RASED. It's ADNOC's AI safety system: computer vision running on live CCTV, built on Fogsphere, delivered by Trust Technical Services together with e&amp; field teams. I'm the engineer in the middle of all three.</p>
+  </div>
+</section>
+
+<section id="where">
+  <div class="wrap">
+    <div class="sec-head"><h2>Where my work lives</h2><span class="label">One hub <b>→</b> many spokes <b>→</b> a lot of cameras</span></div>
+    <div class="topo">
+      <div class="panel">
+        <svg id="topo" viewBox="0 0 720 520" role="img" aria-label="Schematic of a central GPU cluster connected to eight business units, each with edge nodes at sites"></svg>
+        <div class="legend"><span><i style="background:var(--amber)"></i>The hub</span><span><i style="background:var(--teal)"></i>Business unit</span><span><i style="background:#8a969e"></i>Edge box at a site</span></div>
+        <span class="c"></span>
+      </div>
+      <div class="stack">
+        <h3>Hub and spokes</h3>
+        <p>The hub is a GPU cluster in Abu Dhabi that I help keep healthy. The spokes are small GPU boxes installed at sites across the country, each one watching its own cameras. When a satellite link drops, the box keeps working and catches up when the link is back. I've set up a lot of those boxes, usually in pairs so one can cover for the other.</p>
+        <dl class="kv">
+          <dt>The places</dt><dd>Drilling rigs in the desert, offshore platforms, gas and sour-gas plants, fuel distribution stations, Borouge, ADNOC HQ</dd>
+          <dt>What we watch for</dt><dd>Missing PPE, people in red zones or the line of fire, someone down on the ground, fire and smoke, vehicles too close to people</dd>
+          <dt>Where alerts go</dt><dd>Straight into SAP HSE, Power BI dashboards, email and SMS, so nobody has to retype anything</dd>
+          <dt>How updates ship</dt><dd>Docker bundles rolled out to the whole fleet in planned windows with e&amp; field teams, so remote rigs stay current without extra site visits</dd>
+          <dt>Where I've shown it</dt><dd>Live on stage at GITEX and ADIPEC, for engineers one minute and executives the next</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <div class="sec-head"><h2>How I take an idea to the field</h2><span class="label">The loop I run for every new use case</span></div>
+    <div class="pipe">
+      <div><span class="step">STEP 1</span><h3>Listen</h3><p>I sit with site managers and safety teams and ask what keeps them up at night. Then I write it down as something a camera can actually check.</p></div>
+      <div><span class="step">STEP 2</span><h3>Sketch the site</h3><p>Which cameras, how big an edge box, how much bandwidth, which firewall rules, and what takes over if something fails.</p></div>
+      <div><span class="step">STEP 3</span><h3>Build it</h3><p>Detection, tracking, zones and dwell timers, composed into a workflow that fires on the right moment and stays quiet otherwise.</p></div>
+      <div><span class="step">STEP 4</span><h3>Teach the model</h3><p>Fine-tune on footage from that site. Dust, glare and night shifts are where models fall apart, so that's where I spend my time.</p></div>
+      <div><span class="step">STEP 5</span><h3>Ship to the edge</h3><p>Commission the box, plug in the streams, push the quantized model out, and make sure it survives a dropped link.</p></div>
+      <div><span class="step">STEP 6</span><h3>Prove it</h3><p>Walk the site with the HSE team, trigger real scenarios on live cameras, watch the alert land where it should, sign off.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="me">
+  <div class="wrap">
+    <div class="sec-head"><h2>What you get with me</h2><span class="label">Three things that haven't changed <b>since Pune</b></span></div>
+    <div class="ethos">
+      <div class="panel">
+        <span class="step">01</span>
+        <h3>I learn by doing, quickly</h3>
+        <p>I had never touched a drilling rig, a VSAT link or a TensorRT engine before this job. Within months I was commissioning edge nodes on rigs and tuning models for night footage. New domain, new stack, new country. Give me the problem and a week.</p>
+        <span class="c"></span>
+      </div>
+      <div class="panel">
+        <span class="step">02</span>
+        <h3>I ship fast, then make it solid</h3>
+        <p>A working thing in the field teaches you more than a perfect plan on a slide. I get the first version in front of real users early, then harden it: rollback plans, HA pairs, failure tests, store-and-forward for the days the network gives up.</p>
+        <span class="c"></span>
+      </div>
+      <div class="panel">
+        <span class="step">03</span>
+        <h3>I stay close to the people using it</h3>
+        <p>I'm the person ADNOC calls, and the person Fogsphere engineers and e&amp; field crews call back. I'd rather sit in the review session, train the site team and hear the complaint first-hand than read about it in a ticket.</p>
+        <span class="c"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="story">
+  <div class="wrap">
+    <div class="sec-head"><h2>The story so far</h2><span class="label">Latest chapter first</span></div>
+    <div class="log">
+
+      <article class="entry">
+        <div class="meta">
+          <span class="when">Aug 2025 → now</span>
+          <span class="where">Abu Dhabi, UAE</span>
+          <span class="state"><i></i>Chapter 03 · live</span>
+        </div>
+        <div class="body">
+          <h3>The rig years</h3>
+          <p class="org">Trust Technical Services · Computer Vision Engineer on RASED, ADNOC's AI safety platform (built on Fogsphere)</p>
+          <p class="sum">On paper the job was computer vision. In practice it's everything between a safety manager's worry and an alert on someone's phone: requirements, site design, model tuning, Kubernetes, firewalls, field visits and the occasional late-night call about a rig I've never seen. I'm the day-to-day technical contact between ADNOC, Fogsphere engineering and e&amp; field teams across eight business units.</p>
+          <ul class="hl">
+            <li><b>Switched on GPU edge boxes at 70+ sites</b>, in main and backup pairs that keep detecting when the satellite link drops and sync up when it returns.</li>
+            <li><b>Keep the central platform healthy:</b> eight NVIDIA L40 GPU nodes on Kubernetes, upgrades through Helm and GitOps, always with a rollback ready, serving 2,400 cameras.</li>
+            <li><b>Made models better at the hard stuff.</b> Fine-tuned on site footage, calibrated per camera, shipped as quantized TensorRT engines. Fewer false alarms without missing the real ones.</li>
+            <li><b>Connected the platform to ADNOC's world:</b> incidents into SAP HSE through Azure API Management, reporting views for Power BI, and single sign-on for 800+ people.</li>
+            <li><b>Learned to debug a rig remotely,</b> from camera stream to GPU load to backend service, and push the fix upstream so it stays fixed.</li>
+          </ul>
+          <details>
+            <summary>The longer version</summary>
+            <div class="rec">
+              <div><h4>On the vision side</h4><ul>
+                <li>Every new use case starts with me and a site or HQ safety team agreeing what "unsafe" looks like on camera, how we'll know the detector works, and who gets told when it fires.</li>
+                <li>I design the site: camera coverage per use case, edge sizing by camera count and GPU load, bandwidth for event sync and training clips, network rules, HA pairs.</li>
+                <li>I build the use cases themselves, combining detection, person tracking and zone or dwell rules for PPE, red zones, line of fire, man-down, fire and smoke, and vehicle proximity.</li>
+                <li>I run the annotation, augmentation and preprocessing pipelines and keep experiments honest in MLflow.</li>
+                <li>Lately I've been prototyping vision-language agents that describe an event in plain words and filter out false alarms before anyone is paged. Benchmarked against the plain detector, they lift precision.</li>
+              </ul></div>
+              <div><h4>On the platform side</h4><ul>
+                <li>Event schema fields specific to ADNOC, PostgreSQL views for reporting, SAP HSE submission through Azure APIM.</li>
+                <li>Entra ID single sign-on with group-to-role mapping through Keycloak, email through the corporate relay, SMS through Azure APIM.</li>
+                <li>I join Fogsphere's architecture reviews on scaling and capacity as camera counts keep climbing.</li>
+                <li>I run the fleet-wide edge release cycle: Docker bundles planned with Fogsphere, installs scheduled with e&amp; in batched windows.</li>
+              </ul></div>
+              <div><h4>On the people side</h4><ul>
+                <li>Hardware and GPU issues get sorted with e&amp; field engineers: throttling, server health, cameras below spec, CUDA tuning.</li>
+                <li>Releases get proven with site HSE teams on live cameras before I sign them off.</li>
+                <li>I run requirement and review sessions, turn defects and change requests into tickets, and train site teams and admins.</li>
+                <li>Twice now I've stood on a stage at GITEX and ADIPEC running live demos.</li>
+              </ul></div>
+            </div>
+          </details>
+        </div>
+      </article>
+
+      <article class="entry">
+        <div class="meta">
+          <span class="when">Jun 2022 → Nov 2024</span>
+          <span class="where">Pune, India</span>
+          <span class="state done"><i></i>Chapter 02</span>
+        </div>
+        <div class="body">
+          <h3>Storage, then automation</h3>
+          <p class="org">Rakuten Symphony (Robin.io) · Associate Software Engineer · mostly C, Python, Kubernetes and PostgreSQL</p>
+          <p class="sum">Fresh out of college I landed in a team building an S3-compatible object store from scratch to replace MinIO. I got to design the garbage collector, the part that quietly cleans up after deletes without ever losing data, even when a node dies halfway. Later I moved to MDCAP, the automation engine behind Rakuten's telco deployments, and touched everything from the workflow language to access control to how the containers were built.</p>
+          <ul class="hl">
+            <li><b>Designed the distributed garbage collector:</b> a transactional delete queue in PostgreSQL, at-least-once dispatch, and a multithreaded disk scanner that reconciles chunks against metadata and survives crashes.</li>
+            <li><b>Wrote four S3 APIs to the AWS spec,</b> including zero-copy CopyObject using hardlinks and ranged GETs over O_DIRECT reads, all on Reed-Solomon 4+2 erasure coding.</li>
+            <li><b>Took the core image from 1.78 GB to 180 MB</b> with a multi-stage build and single-file binaries, which closed a customer security escalation.</li>
+            <li><b>Extended the workflow language</b> with loops and task grouping, then used it to write a 55-step resumable migration off Cisco VIM.</li>
+            <li><b>Built least-privilege access control</b> with permission bitmaps in JWT claims, enforced per HTTP verb across 20+ resource types for 1,000+ clients.</li>
+          </ul>
+          <details>
+            <summary>The longer version</summary>
+            <div class="rec">
+              <div><h4>The object store</h4><ul>
+                <li>I packaged the whole thing into a one-command Kubernetes install: Helm charts with automatic rollback, disk-discovery DaemonSets, and three synchronously replicated Patroni PostgreSQL clusters.</li>
+                <li>I owned licensing: RSA-4096 keys issued from a Flask service, Evaluation, Production and Community tiers, capacity caps up to 1 PiB, expiry checks.</li>
+                <li>I built cross-site configuration sync for multi-cluster replication, with durable work queues and bounded retries so a crashed database or an unreachable peer didn't leave things half-done.</li>
+                <li>I wrote and ran the failure drills: killed pods and nodes, filled filesystems, partitioned the network, forced Patroni failover, and checked S3 kept answering.</li>
+              </ul></div>
+              <div><h4>MDCAP</h4><ul>
+                <li>Core features of a cloud-native automation platform (async Python on Sanic, PostgreSQL, Kubernetes) that runs declarative DAG workflows on containerized workers for Day-0 to Day-2 operations.</li>
+                <li>I made the fleet dashboard fast at scale by replacing dozens of count queries with one PL/pgSQL aggregation that uses planner estimates past 10,000 rows, refreshed every five minutes.</li>
+                <li>I built secure browser access to servers and BMCs: Wetty behind an Nginx WebSocket proxy, short-lived per-session tokens, power control through ipmitool.</li>
+                <li>I added Amazon EKS as a managed resource type alongside on-prem clusters, with IAM auth and lifecycle workflows.</li>
+              </ul></div>
+            </div>
+          </details>
+        </div>
+      </article>
+
+      <article class="entry">
+        <div class="meta">
+          <span class="when">Aug 2018 → Jun 2022</span>
+          <span class="where">Pune, India</span>
+          <span class="state done"><i></i>Chapter 01</span>
+        </div>
+        <div class="body">
+          <h3>Where it started</h3>
+          <p class="org">College of Engineering, Pune · B.Tech in Computer Engineering · summer at Algoanalytics as a cloud research intern</p>
+          <p class="sum">This is where I fell for systems programming. I rewrote schedulers inside xv6, built a shell and a multithreaded grep in C, and published my first paper as first author. One summer at Algoanalytics I compared AWS, Azure and Google Cloud for hosting ML models and mapped how competing AI products were built. It was my first taste of real trade-offs between cost, speed and what a team can actually run.</p>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<section id="toolbox">
+  <div class="wrap">
+    <div class="sec-head"><h2>Toolbox</h2><span class="label">Highlighted <b>■</b> are my daily drivers right now</span></div>
+    <div class="rack">
+      <div class="panel"><h3>Languages <span>Fluent, and getting there</span></h3><div class="chips"><span class="hot">Python</span><span class="hot">Bash</span><span>C</span><span>JavaScript</span><span>SQL</span><span>C++ (working)</span><span>Go (working)</span></div><span class="c"></span></div>
+      <div class="panel"><h3>Vision &amp; ML <span>From dataset to edge</span></h3><div class="chips"><span class="hot">PyTorch</span><span class="hot">TensorRT</span><span class="hot">Quantization</span><span class="hot">Vision-language models</span><span>TensorFlow / Keras</span><span>OpenCV</span><span>CNN &amp; ViT detectors</span><span>Object tracking</span><span>Annotation &amp; augmentation</span><span>mAP / precision / recall</span><span>MLflow</span></div><span class="c"></span></div>
+      <div class="panel"><h3>Platforms &amp; ops <span>Bare metal to cloud</span></h3><div class="chips"><span class="hot">Kubernetes</span><span class="hot">Docker</span><span class="hot">Helm</span><span class="hot">GitOps</span><span class="hot">PostgreSQL / Patroni</span><span>Longhorn</span><span>Veeam Kasten</span><span>NGINX</span><span>Ubuntu</span><span>Redis</span><span>MQTT</span><span>Sanic</span><span>Flask</span></div><span class="c"></span></div>
+      <div class="panel"><h3>Cloud &amp; glue <span>Identity, APIs, data</span></h3><div class="chips"><span class="hot">Azure Entra ID</span><span class="hot">Azure API Management</span><span class="hot">Keycloak</span><span class="hot">SAP HSE</span><span>Azure DevOps &amp; ACR</span><span>AWS EKS / S3 / IAM</span><span>LDAP / SSO</span><span>Power BI</span><span>REST &amp; webhooks</span><span>Git</span><span>GDB · ASan</span><span>K9s</span><span>Wireshark</span><span>Jenkins</span></div><span class="c"></span></div>
+    </div>
+  </div>
+</section>
+
+<section id="builds">
+  <div class="wrap">
+    <div class="sec-head"><h2>Built for the fun of it</h2><span class="label">College projects I still like, and my first paper</span></div>
+    <div class="grid3">
+      <div><span class="lang">C · OS</span><h3>xv6 schedulers</h3><p>I opened up MIT's teaching OS, added system calls, and swapped in FCFS, priority, lottery and MLFQ schedulers to see how each one behaved.</p></div>
+      <div><span class="lang">C · Unix</span><h3>A Linux shell</h3><p>Pipes, redirection, built-ins and job control, written to properly understand processes and how they talk to each other.</p></div>
+      <div><span class="lang">C · Threads</span><h3>Faster grep</h3><p>A multithreaded grep that beats the original on multi-gigabyte files. Mostly an excuse to learn where the real bottlenecks are.</p></div>
+      <div><span class="lang">Python · Networking</span><h3>HTTP/1.1 from scratch</h3><p>A multithreaded server with GET, POST, PUT, HEAD and DELETE, cookies, connection limits, logging and clean stop/restart.</p></div>
+      <div><span class="lang">Python · NLP</span><h3>Fake news detector</h3><p>NLTK preprocessing, bag-of-words and TF-IDF features, five classifiers raced against each other on F1 and accuracy.</p></div>
+      <div><span class="lang">MERN · MySQL</span><h3>Career Grip and a hospital system</h3><p>A web app for tracking job applications, and a database-backed system for patient records and hospital workflows.</p></div>
+    </div>
+    <div class="panel pub">
+      <div>
+        <div class="venue">IEEE ICCUBEA 2022 · First author</div>
+        <h3>Electronic Health Record Management using Hyperledger Fabric</h3>
+        <p>My first paper. Health records that follow the patient instead of the hospital: patients grant and revoke a doctor's access on a permissioned ledger, every change is recorded for good, and certificates and consensus replace the need to trust one central party.</p>
+      </div>
+      <a class="btn" href="https://ieeexplore.ieee.org/document/10010988" target="_blank" rel="noopener">Read on IEEE Xplore ↗</a>
+      <span class="c"></span>
+    </div>
+  </div>
+</section>
+
+<section id="contact" class="contact">
+  <div class="wrap">
+    <div class="panel">
+      <div>
+        <h2>Say <em>hi.</em></h2>
+        <p class="note">I'm in Abu Dhabi on a Golden Visa that's good until 2035, and happy to relocate or travel. If you're building something where cameras, GPUs or Kubernetes meet the real world, I'd love to hear about it. I reply quickly.</p>
+      </div>
+      <div class="lines">
+        <div class="line"><span class="k">Mail</span><a class="v" href="mailto:rohitkota1999@gmail.com" id="v-mail">rohitkota1999@gmail.com</a><button class="copy" data-copy="rohitkota1999@gmail.com" type="button">Copy</button></div>
+        <div class="line"><span class="k">Tel</span><a class="v" href="tel:+971521523965" id="v-tel">+971 52 152 3965</a><button class="copy" data-copy="+971521523965" type="button">Copy</button></div>
+        <div class="line"><span class="k">Git</span><a class="v" href="https://github.com/rohitkota007" target="_blank" rel="noopener" id="v-git">github.com/rohitkota007</a><button class="copy" data-copy="https://github.com/rohitkota007" type="button">Copy</button></div>
+        <div class="line"><span class="k">CV</span><a class="v" href="rohit-kota-cv.pdf" target="_blank" rel="noopener">rohit-kota-cv.pdf</a><span class="label">PDF</span></div>
+      </div>
+      <span class="c"></span>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Rohit Kota · Abu Dhabi</span>
+    <span>Written by me, built by hand · Oct 2026</span>
+  </div>
+</footer>
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- clocks ---- */
+  var clk = document.getElementById('clk'), fclk = document.getElementById('feedclk');
+  var fmt = new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Dubai',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  var t0 = Date.now();
+  function tick(){
+    var now = new Date();
+    if(clk) clk.textContent = fmt.format(now);
+    if(fclk){
+      var s = Math.floor((Date.now()-t0)/1000);
+      var h = String(Math.floor(s/3600)).padStart(2,'0'), m = String(Math.floor(s%3600/60)).padStart(2,'0'), ss = String(s%60).padStart(2,'0');
+      fclk.textContent = 'REC '+h+':'+m+':'+ss;
+    }
+  }
+  tick(); setInterval(tick,1000);
+
+  /* ---- copy buttons ---- */
+  Array.prototype.forEach.call(document.querySelectorAll('.copy'), function(btn){
+    btn.addEventListener('click', function(){
+      var text = btn.getAttribute('data-copy');
+      var done = function(){ btn.textContent='Copied'; btn.classList.add('ok'); setTimeout(function(){btn.textContent='Copy';btn.classList.remove('ok');},1600); };
+      var fallback = function(){
+        var v = btn.parentNode.querySelector('.v'); if(!v) return;
+        var r = document.createRange(); r.selectNodeContents(v);
+        var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+        btn.textContent='Select + copy';
+      };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done, fallback);
+      } else { fallback(); }
+    });
+  });
+
+  /* ---- camera feed canvas ---- */
+  var cv = document.getElementById('feed');
+  if(cv && cv.getContext){
+    var ctx = cv.getContext('2d');
+    var W=800,H=600, dpr=Math.min(window.devicePixelRatio||1,2);
+    function size(){
+      var r = cv.getBoundingClientRect();
+      W = Math.max(320, Math.round(r.width)); H = Math.round(W*0.75);
+      cv.width = W*dpr; cv.height = H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+    size(); window.addEventListener('resize', size);
+
+    // workers walking across a rig floor. positions are fractions of W/H.
+    var people = [
+      {x:0.08,y:0.70,s:1.00,v:0.00052,ppe:true},
+      {x:0.55,y:0.62,s:0.86,v:0.00036,ppe:true},
+      {x:0.30,y:0.56,s:0.74,v:0.00028,ppe:false},
+      {x:0.82,y:0.76,s:1.08,v:-0.00044,ppe:true}
+    ];
+    var zone = [[0.58,0.52],[0.96,0.52],[0.99,0.86],[0.52,0.86]]; // red zone polygon
+    var stat = document.getElementById('feedstat');
+    var frame = 0;
+
+    function inZone(px,py){
+      // ray cast
+      var inside=false;
+      for(var i=0,j=zone.length-1;i<zone.length;j=i++){
+        var xi=zone[i][0],yi=zone[i][1],xj=zone[j][0],yj=zone[j][1];
+        var hit=((yi>py)!==(yj>py)) && (px < (xj-xi)*(py-yi)/(yj-yi)+xi);
+        if(hit) inside=!inside;
+      }
+      return inside;
+    }
+
+    function draw(dt){
+      frame++;
+      // ground: dark steel deck with perspective lines
+      var g = ctx.createLinearGradient(0,0,0,H);
+      g.addColorStop(0,'#0c1217'); g.addColorStop(0.45,'#0f161c'); g.addColorStop(1,'#1a2229');
+      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+      // horizon structure: derrick silhouette blocks
+      ctx.fillStyle='#0a0f13';
+      ctx.fillRect(W*0.06,H*0.12,W*0.05,H*0.36);
+      ctx.fillRect(W*0.065,H*0.04,W*0.04,H*0.1);
+      ctx.fillRect(W*0.72,H*0.22,W*0.2,H*0.26);
+      ctx.fillRect(W*0.40,H*0.30,W*0.14,H*0.18);
+      // deck grid
+      ctx.strokeStyle='rgba(231,226,215,.07)'; ctx.lineWidth=1;
+      for(var k=0;k<=8;k++){
+        var yy=H*0.48+Math.pow(k/8,1.6)*H*0.52;
+        ctx.beginPath(); ctx.moveTo(0,yy); ctx.lineTo(W,yy); ctx.stroke();
+      }
+      for(var k2=-4;k2<=12;k2++){
+        ctx.beginPath(); ctx.moveTo(W*0.5+(k2-4)*W*0.03,H*0.48); ctx.lineTo(W*0.5+(k2-4)*W*0.19,H); ctx.stroke();
+      }
+      // red zone
+      ctx.save();
+      ctx.beginPath(); zone.forEach(function(p,i){ i?ctx.lineTo(p[0]*W,p[1]*H):ctx.moveTo(p[0]*W,p[1]*H); }); ctx.closePath();
+      ctx.fillStyle='rgba(228,88,63,.08)'; ctx.fill();
+      ctx.setLineDash([6,5]); ctx.strokeStyle='rgba(228,88,63,.75)'; ctx.lineWidth=1.5; ctx.stroke();
+      ctx.restore();
+      ctx.font='600 10px "IBM Plex Mono", monospace'; ctx.fillStyle='rgba(228,88,63,.9)';
+      ctx.fillText('ZONE 02 · RED ZONE · DWELL > 5S', W*0.59, H*0.50);
+
+      var breach=false, noppe=false;
+      people.forEach(function(p){
+        if(!reduce){ p.x += p.v*dt; if(p.x>1.08){p.x=-0.08;} if(p.x<-0.08){p.x=1.08;} }
+        var bw=W*0.055*p.s, bh=H*0.21*p.s, cx=p.x*W, by=p.y*H;
+        var bob = reduce?0:Math.sin(frame/9 + p.x*40)*1.5;
+        // silhouette
+        ctx.fillStyle='#2a3640';
+        ctx.beginPath(); ctx.arc(cx, by-bh+bw*0.32, bw*0.3, 0, Math.PI*2); ctx.fill(); // head
+        ctx.fillRect(cx-bw*0.42, by-bh+bw*0.62+bob, bw*0.84, bh*0.48); // torso
+        ctx.fillRect(cx-bw*0.36, by-bh*0.42+bob, bw*0.3, bh*0.42); // legs
+        ctx.fillRect(cx+bw*0.06, by-bh*0.42-bob, bw*0.3, bh*0.42);
+        if(p.ppe){ ctx.fillStyle='#f0a73a'; ctx.beginPath(); ctx.arc(cx, by-bh+bw*0.3, bw*0.32, Math.PI, 0); ctx.fill(); } // helmet
+        // box
+        var feet = inZone(p.x, p.y);
+        var col = feet ? '#e4583f' : (p.ppe ? '#43b8a2' : '#f0a73a');
+        if(feet) breach=true; if(!p.ppe) noppe=true;
+        var x0=cx-bw*0.62, y0=by-bh-bw*0.1, w0=bw*1.24, h0=bh+bw*0.14;
+        ctx.strokeStyle=col; ctx.lineWidth=1.2;
+        ctx.strokeRect(x0,y0,w0,h0);
+        // corner ticks
+        ctx.lineWidth=2.2; var t=7;
+        [[x0,y0,1,1],[x0+w0,y0,-1,1],[x0,y0+h0,1,-1],[x0+w0,y0+h0,-1,-1]].forEach(function(c){
+          ctx.beginPath(); ctx.moveTo(c[0],c[1]+c[3]*t); ctx.lineTo(c[0],c[1]); ctx.lineTo(c[0]+c[2]*t,c[1]); ctx.stroke();
+        });
+        var lbl = feet ? 'RED ZONE BREACH' : (p.ppe ? 'person 0.'+(88+Math.round(p.s*9)) : 'NO HELMET 0.93');
+        ctx.font='600 10px "IBM Plex Mono", monospace';
+        var tw=ctx.measureText(lbl).width+10;
+        ctx.fillStyle=col; ctx.fillRect(x0, y0-15, tw, 15);
+        ctx.fillStyle='#0a0e12'; ctx.fillText(lbl, x0+5, y0-4);
+      });
+      // vignette + noise lines
+      var v = ctx.createRadialGradient(W/2,H/2,H*0.35,W/2,H/2,H*0.95);
+      v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,.55)');
+      ctx.fillStyle=v; ctx.fillRect(0,0,W,H);
+      if(!reduce && frame%3===0){
+        ctx.fillStyle='rgba(255,255,255,.025)';
+        for(var n=0;n<6;n++){ ctx.fillRect(0, Math.random()*H, W, 1); }
+      }
+      if(stat){
+        stat.textContent = breach ? 'EVENT · RED ZONE · ROUTED' : (noppe ? 'EVENT · PPE · ROUTED' : 'EDGE-A · GPU 61% · SYNC OK');
+        stat.style.color = breach ? 'var(--red)' : (noppe ? 'var(--amber)' : 'var(--teal)');
+      }
+    }
+    var last=performance.now();
+    function loop(now){ var dt=Math.min(50, now-last); last=now; draw(dt); if(!reduce) requestAnimationFrame(loop); }
+    requestAnimationFrame(loop);
+  }
+
+  /* ---- topology svg ---- */
+  var svg = document.getElementById('topo');
+  if(svg){
+    var NS='http://www.w3.org/2000/svg';
+    var cx=360, cy=262, R1=150, R2=228;
+    var units=[
+      {n:'Drilling',sites:9},{n:'Onshore',sites:6},{n:'Offshore',sites:6},{n:'Gas',sites:5},
+      {n:'Sour Gas',sites:4},{n:'Distribution',sites:7},{n:'Borouge',sites:3},{n:'HQ',sites:2}
+    ];
+    function el(tag,attrs,parent){ var e=document.createElementNS(NS,tag); for(var k in attrs) e.setAttribute(k,attrs[k]); (parent||svg).appendChild(e); return e; }
+    var defs=el('defs',{});
+    var st=el('style',{},defs);
+    st.textContent='#topo .sv-l{stroke:#26323b;stroke-width:1} #topo .sv-l2{stroke:#1b252d;stroke-width:1} #topo .sv-t{font:500 10px "IBM Plex Mono",monospace;fill:#8a969e;letter-spacing:.1em;text-transform:uppercase} #topo .sv-tb{font:700 11px "IBM Plex Mono",monospace;fill:#e7e2d7;letter-spacing:.08em} #topo .sv-pk{animation:sv-pk 2.6s ease-out infinite;transform-origin:center;transform-box:fill-box} @keyframes sv-pk{0%{opacity:.7;transform:scale(1)}100%{opacity:0;transform:scale(2.6)}} @media (prefers-reduced-motion:reduce){#topo .sv-pk{animation:none;opacity:.25}}';
+    // rings
+    el('circle',{cx:cx,cy:cy,r:R1,fill:'none',stroke:'#1b252d','stroke-dasharray':'2 6'});
+    el('circle',{cx:cx,cy:cy,r:R2,fill:'none',stroke:'#1b252d','stroke-dasharray':'2 6'});
+    units.forEach(function(u,i){
+      var a=-Math.PI/2 + i*(Math.PI*2/units.length);
+      var ux=cx+Math.cos(a)*R1, uy=cy+Math.sin(a)*R1;
+      el('line',{x1:cx,y1:cy,x2:ux,y2:uy,'class':'sv-l'});
+      // site dots on outer ring, fanned around the unit's angle
+      var spread = 0.11*(u.sites-1);
+      for(var s=0;s<u.sites;s++){
+        var sa = a - spread/2 + s*0.11;
+        var sx=cx+Math.cos(sa)*R2, sy=cy+Math.sin(sa)*R2;
+        el('line',{x1:ux,y1:uy,x2:sx,y2:sy,'class':'sv-l2'});
+        el('circle',{cx:sx,cy:sy,r:3.2,fill:'#8a969e'});
+      }
+      el('circle',{cx:ux,cy:uy,r:7,fill:'#0a0e12',stroke:'#43b8a2','stroke-width':2});
+      // label pushed outward along the angle, beyond the outer ring
+      var lx=cx+Math.cos(a)*(R2+28), ly=cy+Math.sin(a)*(R2+28);
+      var anchor = Math.abs(Math.cos(a))<0.2 ? 'middle' : (Math.cos(a)>0?'start':'end');
+      var tx=el('text',{x:lx,y:ly+4,'text-anchor':anchor,'class':'sv-tb'}); tx.textContent=u.n;
+      var tx2=el('text',{x:lx,y:ly+17,'text-anchor':anchor,'class':'sv-t'}); tx2.textContent=u.sites+' edge nodes';
+    });
+    // center
+    el('circle',{cx:cx,cy:cy,r:22,fill:'#f0a73a','class':'sv-pk',opacity:.5});
+    el('circle',{cx:cx,cy:cy,r:22,fill:'#0a0e12',stroke:'#f0a73a','stroke-width':2});
+    el('rect',{x:cx-9,y:cy-9,width:18,height:18,fill:'none',stroke:'#f0a73a','stroke-width':1.5});
+    el('rect',{x:cx-4,y:cy-4,width:8,height:8,fill:'#f0a73a'});
+    var c1=el('text',{x:cx,y:cy+44,'text-anchor':'middle','class':'sv-tb'}); c1.textContent='Fogsphere Manager';
+    var c2=el('text',{x:cx,y:cy+57,'text-anchor':'middle','class':'sv-t'}); c2.textContent='8 × NVIDIA L40 · K8s';
+    var note=el('text',{x:12,y:508,'class':'sv-t'}); note.textContent='Schematic. Node counts are illustrative; the fleet spans 200 sites and 2,400 cameras.';
+  }
+})();
+</script>
+
+</body>
+</html>
