@@ -1,0 +1,562 @@
+<title>Rohit Kota Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Code+Pro:wght@400;500&display=swap">
+<style>
+  /* Layout: engineering-documentation site. Top bar, then a two-column body at desktop width
+     (sticky contents list on the left that tracks the section in view, article column on the
+     right). Sections alternate between the page ground and a tinted band. Architecture is shown
+     as small box-and-arrow diagrams in monospace; the opening page carries one animated feed. */
+  :root {
+    --bg: #ffffff;
+    --band: #f4f6f8;
+    --code: #f1f4f7;
+    --panel: #ffffff;
+    --fg: #1d2630;
+    --fg-2: #46525e;
+    --muted: #6b7682;
+    --rule: #dde3e8;
+    --accent: #1f5fa8;
+    --accent-ink: #ffffff;
+    --tag-bg: #eef2f6;
+    --status: #b45309;
+    --status-bg: #fff4e5;
+    --diag: #1a8fa5;        /* diagram box borders */
+    --diag-hi: #c98f00;     /* diagram highlight */
+    --feed-sky-1: #dfe7ee; --feed-sky-2: #c9d4dd; --feed-ground: #d8d1c2; --feed-steel: #6b7a86; --feed-dark: #4a5864;
+
+    --font-sans: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "Source Code Pro", ui-monospace, Menlo, Consolas, monospace;
+    --gutter: clamp(16px, 4vw, 40px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12171c; --band: #171d23; --code: #1b2229; --panel: #151b21; --fg: #e4e9ee; --fg-2: #bcc6cf; --muted: #8e9aa6;
+      --rule: #2a333c; --accent: #7fb0e8; --accent-ink: #12171c; --tag-bg: #212a33; --status: #f3b562; --status-bg: #2b2217;
+      --diag: #3fb9cf; --diag-hi: #f2a900;
+      --feed-sky-1: #1b2a35; --feed-sky-2: #0e161d; --feed-ground: #262520; --feed-steel: #4a5b68; --feed-dark: #2f3b45;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12171c; --band: #171d23; --code: #1b2229; --panel: #151b21; --fg: #e4e9ee; --fg-2: #bcc6cf; --muted: #8e9aa6;
+    --rule: #2a333c; --accent: #7fb0e8; --accent-ink: #12171c; --tag-bg: #212a33; --status: #f3b562; --status-bg: #2b2217;
+    --diag: #3fb9cf; --diag-hi: #f2a900;
+    --feed-sky-1: #1b2a35; --feed-sky-2: #0e161d; --feed-ground: #262520; --feed-steel: #4a5b68; --feed-dark: #2f3b45;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-sans); font-size: 16px; line-height: 1.6; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  h1, h2, h3, h4, p, ul, ol, dl, pre, table, figure { margin: 0; }
+  h1 { font-size: 32px; line-height: 1.2; font-weight: 700; letter-spacing: -0.01em; }
+  h2 { font-size: 24px; line-height: 1.3; font-weight: 700; }
+  h3 { font-size: 18px; line-height: 1.35; font-weight: 600; }
+  h4 { font-size: 15px; line-height: 1.4; font-weight: 600; }
+  p, li { color: var(--fg-2); }
+  strong { color: var(--fg); font-weight: 600; }
+  code, pre, .mono { font-family: var(--font-mono); }
+  .small { font-size: 14px; }
+  .label { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+  /* Top bar */
+  .topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); border-bottom: 1px solid var(--rule); }
+  .topbar-in { max-width: 1180px; margin: 0 auto; padding-inline: var(--gutter); min-height: 54px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .brand { color: var(--fg); font-weight: 700; }
+  .brand:hover { text-decoration: none; }
+  .brand span { color: var(--muted); font-weight: 400; }
+  .topnav { display: flex; flex-wrap: wrap; gap: 4px 18px; justify-content: flex-end; }
+  .topnav a { font-size: 14px; color: var(--fg-2); }
+  @media (min-width: 1000px) { .topnav { display: none; } }
+
+  /* Page grid */
+  .page { max-width: 1180px; margin: 0 auto; padding-inline: var(--gutter); display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 48px; align-items: start; }
+  @media (min-width: 1000px) { .page { grid-template-columns: 200px minmax(0, 1fr); } }
+  .side { display: none; }
+  @media (min-width: 1000px) {
+    .side { display: block; position: sticky; top: calc(54px + env(safe-area-inset-top, 0px)); padding-block: 22px 24px; max-height: calc(100vh - 54px); overflow-y: auto; }
+    .side .label { display: block; margin-bottom: 10px; padding-left: 14px; }
+    .side ol { list-style: none; padding: 0; display: grid; gap: 1px; border-left: 1px solid var(--rule); }
+    .side a { display: block; padding: 5px 0 5px 14px; margin-left: -1px; border-left: 2px solid transparent; font-size: 14px; color: var(--fg-2); }
+    .side a:hover { color: var(--fg); text-decoration: none; }
+    .side a.active { color: var(--accent); border-left-color: var(--accent); font-weight: 600; }
+    .side a.sub { font-size: 13px; padding-left: 26px; }
+  }
+  .content { min-width: 0; }
+
+  /* Sections */
+  section { padding-block: 40px; border-bottom: 1px solid var(--rule); }
+  section:last-of-type { border-bottom: 0; }
+  .band { background: var(--band); margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); }
+  @media (min-width: 1000px) { .band { margin-inline: 0; padding-inline: 0; background: transparent; } .band .inner { background: var(--band); border: 1px solid var(--rule); border-radius: 6px; padding: 28px; } }
+  .inner { display: grid; gap: 22px; }
+  .sec-title { display: grid; gap: 6px; }
+  .sec-title p { max-width: 68ch; }
+  .prose { display: grid; gap: 14px; max-width: 68ch; }
+
+  /* Hero */
+  .hero { padding-block: 28px 36px; display: grid; gap: 28px; align-items: center; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 860px) { .hero { grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 40px; } }
+  .hero-copy { display: grid; gap: 14px; }
+  .hero .role { font-size: 18px; color: var(--fg-2); font-weight: 600; }
+  .hero .intro { max-width: 60ch; font-size: 17px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 14px; border-radius: 4px; border: 1px solid var(--rule); background: var(--bg); color: var(--fg); font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; font-family: var(--font-sans); }
+  .btn:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .btn.primary:hover { filter: brightness(1.08); color: var(--accent-ink); }
+
+  /* Animated feed (opening page) */
+  .feed { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; min-width: 0; }
+  .feed-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 7px 12px; border-bottom: 1px solid var(--rule); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; color: var(--muted); text-transform: uppercase; }
+  .feed-bar .live { display: inline-flex; align-items: center; gap: 6px; color: var(--fg); }
+  .feed-bar .live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #e5484d; }
+  .feed svg { display: block; width: 100%; height: auto; max-width: 100%; }
+  .feed-foot { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 9px 12px; border-top: 1px solid var(--rule); font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  .feed-foot .pill::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 2px; background: var(--diag); margin-right: 6px; vertical-align: 1px; }
+  .feed-foot .pill.warn::before { background: var(--diag-hi); }
+  .sky1 { stop-color: var(--feed-sky-1); } .sky2 { stop-color: var(--feed-sky-2); }
+  .ground { fill: var(--feed-ground); } .steel { stroke: var(--feed-steel); } .dark { fill: var(--feed-dark); }
+  .box { stroke: var(--diag); } .boxfill { fill: var(--diag); } .boxtxt { fill: var(--bg); }
+  .zone { stroke: var(--diag-hi); fill: var(--diag-hi); } .zonefill { fill: var(--diag-hi); }
+  .hud { fill: var(--muted); }
+  .scan { fill: var(--diag); animation: scan 6s linear infinite; }
+  .bx1 { animation: drift1 7s ease-in-out infinite; }
+  .bx2 { animation: drift2 9s ease-in-out infinite; }
+  @keyframes scan { from { transform: translateY(0); } to { transform: translateY(240px); } }
+  @keyframes drift1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(6px,-3px); } }
+  @keyframes drift2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-8px,2px); } }
+  @media (prefers-reduced-motion: reduce) { .scan, .bx1, .bx2 { animation: none; } }
+
+  /* Cards and stats */
+  .cards { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 700px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .card { border: 1px solid var(--rule); border-radius: 6px; padding: 18px; background: var(--panel); display: grid; gap: 8px; align-content: start; min-width: 0; }
+  .card .meta { font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+  .card p { font-size: 15px; }
+  .more { font-size: 14px; font-weight: 600; }
+  .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  @media (min-width: 700px) { .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .stat { border-top: 2px solid var(--accent); padding-top: 10px; display: grid; gap: 2px; }
+  .stat .n { font-size: 28px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--fg); }
+  .stat .l { font-size: 14px; color: var(--fg-2); }
+
+  /* About */
+  .about { display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 900px) { .about { grid-template-columns: minmax(0, 1fr) 280px; gap: 40px; } }
+  dl.kv { display: grid; gap: 8px; align-content: start; }
+  dl.kv div { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 10px; font-size: 15px; padding: 8px 0; border-bottom: 1px solid var(--rule); }
+  dl.kv dt { color: var(--muted); }
+  dl.kv dd { margin: 0; color: var(--fg-2); }
+  @media (max-width: 520px) { dl.kv div { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+
+  /* Experience route */
+  .route { position: relative; display: grid; gap: 22px; padding-left: 30px; }
+  .route::before { content: ""; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 2px; background: repeating-linear-gradient(to bottom, var(--rule) 0 8px, transparent 8px 14px); }
+  .stop { position: relative; display: grid; gap: 12px; background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 18px 20px; min-width: 0; }
+  .stop::before { content: ""; position: absolute; left: -29px; top: 22px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); border: 2px solid var(--muted); }
+  .stop.now::before { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent); }
+  .stop-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; align-items: baseline; }
+  .stop-head .when { font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+  .stop .role { color: var(--fg-2); font-size: 15px; }
+  .stop ul { padding-left: 20px; display: grid; gap: 6px; }
+  .stop li { font-size: 15px; }
+  .stop li::marker { color: var(--accent); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { font-family: var(--font-mono); font-size: 12px; color: var(--fg-2); background: var(--tag-bg); border: 1px solid var(--rule); padding: 2px 8px; border-radius: 3px; }
+  .tag.hi { border-color: color-mix(in srgb, var(--diag) 55%, var(--rule)); color: var(--fg); }
+
+  /* Box-and-arrow diagrams */
+  .diagrams { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 760px) { .diagrams.two { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .diag { border: 1px solid var(--rule); border-radius: 6px; background: var(--code); padding: 12px 12px 10px; display: grid; gap: 8px; min-width: 0; }
+  .diag svg { display: block; width: 100%; height: auto; max-width: 100%; }
+  .diag .cap { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .d-box { fill: var(--panel); stroke: var(--diag); stroke-width: 1.3; }
+  .d-box.hi { stroke: var(--diag-hi); }
+  .d-txt { font-family: "Source Code Pro", ui-monospace, Menlo, monospace; font-size: 10.5px; fill: var(--fg); }
+  .d-note { font-family: "Source Code Pro", ui-monospace, Menlo, monospace; font-size: 10px; fill: var(--muted); }
+  .d-line { stroke: var(--muted); stroke-width: 1.3; fill: none; }
+  .d-line.dash { stroke-dasharray: 4 4; }
+  .d-arrow { fill: var(--muted); }
+  .d-dot { fill: var(--diag); }
+
+  /* Case studies */
+  .case { display: grid; gap: 22px; padding-block: 8px; }
+  .case + .case { border-top: 1px solid var(--rule); padding-top: 32px; margin-top: 10px; }
+  .case-head { display: grid; gap: 6px; }
+  .case-head .num { font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+  .case-head .lede { max-width: 68ch; }
+  .status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--status); background: var(--status-bg); border-radius: 3px; padding: 2px 8px; width: max-content; }
+  .status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--status); }
+  .status.live { color: var(--accent); background: var(--tag-bg); }
+  .status.live::before { background: var(--accent); }
+  .sub { display: grid; gap: 10px; }
+  .sub p, .sub li { max-width: 68ch; }
+  pre.diagram { background: var(--code); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; font-size: 13px; line-height: 1.5; color: var(--fg); overflow-x: auto; max-width: 100%; }
+  .cols { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 640px) { .cols { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 900px) { .cols.four { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .col { display: grid; gap: 8px; align-content: start; min-width: 0; }
+  .col ul { padding-left: 18px; display: grid; gap: 3px; }
+  .col li { font-size: 14.5px; }
+  .tbl-wrap { overflow-x: auto; max-width: 100%; border: 1px solid var(--rule); border-radius: 6px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; color: var(--fg-2); }
+  th { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: var(--code); font-weight: 600; }
+  tr:last-child td { border-bottom: 0; }
+  td:first-child { color: var(--fg); font-weight: 600; white-space: nowrap; }
+
+  /* Writing, repos, contact */
+  .writing { display: grid; border-top: 1px solid var(--rule); }
+  .writing > div { display: grid; gap: 4px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+  .writing h3 { font-size: 16px; }
+  .writing p { font-size: 14.5px; max-width: 68ch; }
+  .writing .row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; align-items: center; }
+  .repos { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 700px) { .repos { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .repo { border: 1px solid var(--rule); border-radius: 6px; padding: 14px; display: grid; gap: 6px; align-content: start; min-width: 0; background: var(--panel); }
+  .repo .name { font-family: var(--font-mono); font-size: 14px; color: var(--fg); font-weight: 500; }
+  .repo p { font-size: 14px; }
+  .notice { border-left: 3px solid var(--accent); padding: 8px 14px; background: var(--tag-bg); border-radius: 0 4px 4px 0; font-size: 14.5px; max-width: 72ch; }
+  .crows { display: grid; border-top: 1px solid var(--rule); max-width: 560px; }
+  .crow { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+  .ck { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+  .crow code { font-size: 16px; color: var(--fg); user-select: all; overflow-wrap: anywhere; }
+  .crow a { font-size: 16px; overflow-wrap: anywhere; }
+  .btn.copy { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; min-height: 30px; padding: 0 10px; color: var(--muted); }
+  .btn.copy:hover { color: var(--accent); }
+  .copied { font-size: 13px; color: var(--muted); min-height: 1.2em; }
+  footer { padding-block: 24px 48px; border-top: 1px solid var(--rule); font-size: 14px; color: var(--muted); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 20px; }
+</style>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="#home">Rohit Kota <span>/ portfolio</span></a>
+    <nav class="topnav" aria-label="Sections">
+      <a href="#about">About</a><a href="#experience">Experience</a><a href="#contact">Contact</a>
+    </nav>
+  </div>
+</div>
+
+<div class="page">
+  <aside class="side" aria-label="Contents">
+    <span class="label">Contents</span>
+    <ol id="toc">
+      <li><a href="#home" data-sec="home">Home</a></li>
+      <li><a href="#about" data-sec="about">About</a></li>
+      <li><a href="#experience" data-sec="experience">Experience</a></li>
+      <li><a href="#contact" data-sec="contact">Contact</a></li>
+    </ol>
+  </aside>
+
+  <main class="content">
+
+    <!-- HOME -->
+    <section id="home" style="border-bottom:0; padding-block:0">
+      <header class="hero">
+        <div class="hero-copy">
+          <h1>Rohit Kota</h1>
+          <p class="role">Computer Vision &amp; AI Platform Engineer</p>
+          <p class="intro">I take computer-vision safety systems from a requirement on paper to alerts running on live oil and gas sites, and I build the Kubernetes, edge, and storage infrastructure underneath them. Four years across AI deployment and distributed systems, from C inside an object store to GPU inference on drilling rigs. Based in Abu Dhabi.</p>
+          <div class="actions">
+            <a class="btn primary" href="#experience">View experience</a>
+            <a class="btn" href="Rohit_Kota_Resume.pdf?v=20261006" target="_blank" rel="noopener">Download resume</a>
+            <a class="btn" href="https://github.com/rohitkota007" target="_blank" rel="noopener">GitHub</a>
+          </div>
+        </div>
+        <figure class="feed" aria-label="Illustration of a camera feed with detection boxes">
+          <div class="feed-bar"><span class="live">Live</span><span>CAM 12 · drill floor</span><span>03:41:52</span></div>
+          <svg viewBox="0 0 480 300" role="img" aria-label="Stylised drilling rig scene with detection boxes for a person wearing PPE, a line-of-fire zone, and a vehicle">
+            <defs>
+              <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop class="sky1" offset="0"/><stop class="sky2" offset="1"/></linearGradient>
+            </defs>
+            <rect width="480" height="300" fill="url(#sky)"/>
+            <rect class="ground" y="218" width="480" height="82"/>
+            <g class="steel" stroke-width="3" fill="none" stroke-linejoin="round">
+              <path d="M300 218 L318 40 L352 40 L372 218 Z"/>
+              <path d="M305 180 L367 180 M308 150 L364 150 M311 120 L361 120 M314 92 L358 92 M316 66 L355 66"/>
+              <path d="M305 180 L364 150 M308 150 L361 120 M311 120 L358 92 M314 92 L355 66"/>
+            </g>
+            <g class="steel" stroke-width="4" stroke-linecap="round"><path d="M30 206 H200 M30 196 H200 M30 186 H200"/><path d="M60 186 V218 M170 186 V218"/></g>
+            <g><rect class="dark" x="60" y="232" width="92" height="30" rx="4"/><rect class="dark" x="70" y="222" width="46" height="18" rx="3"/><circle cx="82" cy="266" r="9" fill="#111a21" class="steel" stroke-width="3"/><circle cx="132" cy="266" r="9" fill="#111a21" class="steel" stroke-width="3"/></g>
+            <g><circle cx="238" cy="196" r="9" fill="#e9c9a8"/><path class="zonefill" d="M226 194 Q238 180 250 194 Z"/><rect class="zonefill" x="228" y="205" width="20" height="30" rx="4"/><rect class="dark" x="231" y="235" width="6" height="30"/><rect class="dark" x="239" y="235" width="6" height="30"/></g>
+            <g class="bx2">
+              <rect class="zone" x="170" y="150" width="130" height="110" fill-opacity="0.08" stroke-width="1.5" stroke-dasharray="6 5"/>
+              <rect class="zonefill" x="170" y="138" width="124" height="14"/>
+              <text class="boxtxt" x="175" y="149" font-family="Source Code Pro, monospace" font-size="9.5" letter-spacing="0.5">LINE-OF-FIRE ZONE · ACTIVE</text>
+            </g>
+            <g class="bx1">
+              <rect class="box" x="218" y="182" width="42" height="86" fill="none" stroke-width="2"/>
+              <path class="box" d="M218 182 h8 M218 182 v8 M260 182 h-8 M260 182 v8 M218 268 h8 M218 268 v-8 M260 268 h-8 M260 268 v-8" stroke-width="3" fill="none"/>
+              <rect class="boxfill" x="218" y="170" width="118" height="13"/>
+              <text class="boxtxt" x="222" y="180" font-family="Source Code Pro, monospace" font-size="9.5" letter-spacing="0.5">PERSON · PPE OK · 0.94</text>
+            </g>
+            <g>
+              <rect class="box" x="52" y="216" width="110" height="62" fill="none" stroke-width="2" stroke-dasharray="3 3"/>
+              <rect class="boxfill" x="52" y="204" width="138" height="13"/>
+              <text class="boxtxt" x="56" y="214" font-family="Source Code Pro, monospace" font-size="9.5" letter-spacing="0.5">VEHICLE · PROXIMITY 7.2 M</text>
+            </g>
+            <rect class="scan" x="0" y="20" width="480" height="2" fill-opacity="0.35"/>
+            <text class="hud" x="12" y="290" font-family="Source Code Pro, monospace" font-size="9.5" letter-spacing="1">EDGE NODE 02 · GPU 61% · LINK VSAT · STORE-AND-FORWARD READY</text>
+          </svg>
+          <figcaption class="feed-foot">
+            <span class="pill">PPE compliance</span><span class="pill warn">Line-of-fire breach</span><span class="pill">Vehicle proximity</span><span class="pill">Man-down</span><span class="pill">Fire &amp; smoke</span>
+          </figcaption>
+        </figure>
+      </header>
+
+      <div class="band">
+        <div class="inner" style="padding-block:28px">
+          <span class="label">Work experience</span>
+          <div class="cards">
+            <article class="card">
+              <h3>RASED, ADNOC AI safety platform</h3>
+              <p class="meta">70+ sites · 2,400 cameras · 8 ADNOC business units</p>
+              <p>Production computer-vision platform for real-time detection of unsafe acts and conditions across industrial environments. Core engineer from requirements through edge deployment to production support.</p>
+            </article>
+            <article class="card">
+              <h3>Rakuten Symphony</h3>
+              <p class="meta">Distributed systems · Object storage · Kubernetes · PostgreSQL</p>
+              <p>Built core components of an S3-compatible object storage platform that replaced MinIO, and of a cloud-native telco automation platform.</p>
+            </article>
+          </div>
+          <div class="stats">
+            <div class="stat"><span class="n">70+</span><span class="l">Sites deployed</span></div>
+            <div class="stat"><span class="n">2,400+</span><span class="l">Cameras on the platform</span></div>
+            <div class="stat"><span class="n">8</span><span class="l">ADNOC business units</span></div>
+            <div class="stat"><span class="n">4+</span><span class="l">Years engineering experience</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about">
+      <div class="inner">
+        <div class="sec-title"><h2>About</h2></div>
+        <div class="about">
+          <div class="prose">
+            <p>I like understanding how things work and then building them myself.</p>
+            <p>That curiosity started early, taking things apart just to understand what was inside, and eventually turned into engineering. During college in Pune, I built things from the ground up: a kernel, a shell, and even an HTTP server, mostly because I wanted to understand what was happening underneath the abstractions.</p>
+            <p>At Rakuten Symphony, that curiosity took me deeper into distributed systems. I spent two years working on an erasure-coded object store and a Kubernetes automation platform, building core infrastructure and learning that the most interesting engineering problems usually live in the edge cases.</p>
+            <p>Today, in Abu Dhabi, I work on computer vision and AI systems for real industrial environments. On RASED, ADNOC's computer-vision safety platform, I work across drilling, offshore, and other industrial sites. One of the most rewarding moments is seeing a camera and model I helped deploy generate its first real-world alert.</p>
+            <p>I enjoy working at the intersection of AI, systems, and infrastructure, especially when the problem doesn't have a clean answer. I also enjoy explaining what I build, whether that's through a live demo at GITEX or ADIPEC, documenting a difficult problem, or talking through an idea over coffee.</p>
+            <p>I'm always looking for interesting problems, things worth building, and places that teach me something new.</p>
+          </div>
+          <dl class="kv">
+            <div><dt>Based in</dt><dd>Abu Dhabi, UAE</dd></div>
+            <div><dt>From</dt><dd>Pune, India</dd></div>
+            <div><dt>Now</dt><dd>Computer Vision Engineer, Trutech, a Fogsphere delivery partner, on ADNOC's RASED programme</dd></div>
+            <div><dt>Before</dt><dd>Rakuten Symphony (Robin.io), 2022 to 2024</dd></div>
+            <div><dt>Studied</dt><dd>B.Tech Computer Engineering, College of Engineering Pune, 2022</dd></div>
+            <div><dt>Open to</dt><dd>Relocation and travel</dd></div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXPERIENCE -->
+    <section class="band" id="experience">
+      <div class="inner">
+        <div class="sec-title"><h2>Experience</h2><p>Where I have worked and what I actually built there. Diagrams are generalized; proprietary details stay out.</p></div>
+        <div class="route">
+
+          <article class="stop now">
+            <div class="stop-head"><h3>Trutech, Fogsphere delivery partner</h3><span class="when">Aug 2025 to present · Abu Dhabi</span></div>
+            <p class="role">Computer Vision Engineer on ADNOC's RASED programme (title: Computer Vision Business Analyst)</p>
+            <ul>
+              <li><strong>Took 70+ sites live in just over a year</strong> across eight ADNOC business units, from desert drilling rigs to offshore facilities.</li>
+              <li><strong>Model engineering:</strong> fine-tune PyTorch object detectors with CNN and ViT backbones on site footage, build annotation and augmentation pipelines, track mAP, precision, and recall per release in MLflow, and tune confidence thresholds and regions of interest per camera.</li>
+              <li><strong>Edge inference:</strong> quantize and export models to TensorRT for GPU edge nodes, combine detection with multi-object tracking and zone and dwell-time rules for PPE, line-of-fire, red-zone, man-down, fire and smoke, and vehicle proximity use cases.</li>
+              <li><strong>Multimodal AI:</strong> prototype vision-language model agents, multimodal LLMs that read a clip and the detector's output, generate a plain-language event description, and suppress false alarms before escalation, using prompt design and fine-tuning on annotated clips and benchmarking against the detector-only baseline.</li>
+              <li><strong>Platform and fleet:</strong> operate the central GPU Kubernetes platform with Helm and GitOps upgrades, run the edge software release cycle with field teams in batched windows, keep detection running through satellite outages with store-and-forward, and troubleshoot missed or false alerts from camera to backend.</li>
+              <li><strong>Customer side:</strong> write detection definitions and acceptance criteria with HSE teams, run UAT on live cameras, support 800+ platform users, and demo the platform live at GITEX and ADIPEC.</li>
+            </ul>
+            <div class="diagrams two">
+              <figure class="diag">
+                <svg viewBox="0 0 560 190" role="img" aria-label="Flow from HSE requirement through detector, per-camera tuning, VLM filter and UAT to a live alert">
+                  <defs><marker id="arA" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path class="d-arrow" d="M0 0 L8 4 L0 8 z"/></marker></defs>
+                  <rect class="d-box" x="12" y="28" width="130" height="34" rx="3"/><text class="d-txt" x="77" y="49" text-anchor="middle">HSE requirement</text>
+                  <rect class="d-box" x="190" y="28" width="130" height="34" rx="3"/><text class="d-txt" x="255" y="49" text-anchor="middle">Detector + rules</text>
+                  <rect class="d-box" x="368" y="28" width="150" height="34" rx="3"/><text class="d-txt" x="443" y="49" text-anchor="middle">Tuned per camera</text>
+                  <line class="d-line" x1="142" y1="45" x2="188" y2="45" marker-end="url(#arA)"/>
+                  <line class="d-line" x1="320" y1="45" x2="366" y2="45" marker-end="url(#arA)"/>
+                  <polyline class="d-line" points="443,62 443,84 77,84 77,112" marker-end="url(#arA)"/>
+                  <rect class="d-box hi" x="12" y="114" width="130" height="34" rx="3"/><text class="d-txt" x="77" y="135" text-anchor="middle">VLM filter</text>
+                  <text class="d-note" x="150" y="105">false alarms dropped here</text>
+                  <rect class="d-box" x="190" y="114" width="130" height="34" rx="3"/><text class="d-txt" x="255" y="135" text-anchor="middle">UAT on site</text>
+                  <rect class="d-box" x="368" y="114" width="150" height="34" rx="3"/><text class="d-txt" x="443" y="135" text-anchor="middle">Live alert + integrations</text>
+                  <line class="d-line" x1="142" y1="131" x2="188" y2="131" marker-end="url(#arA)"/>
+                  <line class="d-line" x1="320" y1="131" x2="366" y2="131" marker-end="url(#arA)"/>
+                  <text class="d-note" x="443" y="168" text-anchor="middle">incident system · reports · email · SMS</text>
+                </svg>
+                <figcaption class="cap">Requirement in, trusted alert out.</figcaption>
+              </figure>
+              <figure class="diag">
+                <svg viewBox="0 0 560 190" role="img" aria-label="One site: central platform linked over satellite to a main and a backup edge node, each serving cameras">
+                  <defs><marker id="arB" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path class="d-arrow" d="M0 0 L8 4 L0 8 z"/></marker></defs>
+                  <rect class="d-box" x="12" y="72" width="150" height="46" rx="3"/><text class="d-txt" x="87" y="91" text-anchor="middle">Central platform</text><text class="d-note" x="87" y="106" text-anchor="middle">GPU · Kubernetes</text>
+                  <polyline class="d-line dash" points="162,95 230,95 230,45 288,45" marker-end="url(#arB)"/>
+                  <polyline class="d-line dash" points="230,95 230,145 288,145" marker-end="url(#arB)"/>
+                  <text class="d-note" x="232" y="88">VSAT / SD-WAN</text>
+                  <rect class="d-box" x="290" y="24" width="140" height="42" rx="3"/><text class="d-txt" x="360" y="42" text-anchor="middle">Edge · main</text><text class="d-note" x="360" y="56" text-anchor="middle">GPU inference + store</text>
+                  <rect class="d-box" x="290" y="124" width="140" height="42" rx="3"/><text class="d-txt" x="360" y="142" text-anchor="middle">Edge · backup</text><text class="d-note" x="360" y="156" text-anchor="middle">GPU inference + store</text>
+                  <line class="d-line" x1="430" y1="45" x2="470" y2="45"/><line class="d-line" x1="430" y1="145" x2="470" y2="145"/>
+                  <circle class="d-dot" cx="482" cy="33" r="3"/><circle class="d-dot" cx="482" cy="45" r="3"/><circle class="d-dot" cx="482" cy="57" r="3"/>
+                  <circle class="d-dot" cx="482" cy="133" r="3"/><circle class="d-dot" cx="482" cy="145" r="3"/><circle class="d-dot" cx="482" cy="157" r="3"/>
+                  <text class="d-note" x="494" y="49">cameras</text><text class="d-note" x="494" y="149">cameras</text>
+                </svg>
+                <figcaption class="cap">One site. Events queue on the edge when the link drops.</figcaption>
+              </figure>
+            </div>
+            <div class="tags"><span class="tag hi">PyTorch</span><span class="tag hi">TensorRT</span><span class="tag hi">VLMs · multimodal LLMs</span><span class="tag">OpenCV</span><span class="tag">MLflow</span><span class="tag">prompt engineering</span><span class="tag">object tracking</span><span class="tag">Kubernetes</span><span class="tag">Helm · GitOps</span><span class="tag">PostgreSQL</span><span class="tag">Azure</span></div>
+          </article>
+
+          <article class="stop">
+            <div class="stop-head"><h3>Rakuten Symphony (Robin.io), object storage</h3><span class="when">Jun 2022 to Sep 2024 · Pune</span></div>
+            <p class="role">Associate Software Engineer. An S3-compatible, erasure-coded object store in C that replaced MinIO and saves over $4M a year.</p>
+            <ul>
+              <li><strong>Designed the distributed garbage collector:</strong> the metadata delete and a work item commit in one PostgreSQL transaction, gateway workers claim items atomically and fan out chunk deletes with at-least-once delivery, and a disk scanner reconciles chunks against metadata, so space is reclaimed even through crashes.</li>
+              <li><strong>Implemented four S3 APIs to the AWS spec:</strong> zero-copy CopyObject with hardlinks, RFC-7233 ranged GETs over aligned direct I/O reading only the chunks needed, HeadObject, ListMultipartUploads.</li>
+              <li><strong>Packaged the store as a single-command Helm deployment</strong> with disk discovery, rollback, and three 3-node Patroni PostgreSQL clusters, and wrote the failure-mode test plans.</li>
+            </ul>
+            <div class="diagrams">
+              <figure class="diag">
+                <svg viewBox="0 0 640 170" role="img" aria-label="Delete path: delete request to a transactional delete queue in PostgreSQL, a dispatcher with at-least-once delivery to disk daemons, and a disk scanner that reconciles chunks against metadata">
+                  <defs><marker id="arC" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path class="d-arrow" d="M0 0 L8 4 L0 8 z"/></marker></defs>
+                  <rect class="d-box" x="12" y="30" width="90" height="34" rx="3"/><text class="d-txt" x="57" y="51" text-anchor="middle">DELETE</text>
+                  <rect class="d-box hi" x="150" y="24" width="170" height="46" rx="3"/><text class="d-txt" x="235" y="43" text-anchor="middle">Delete queue</text><text class="d-note" x="235" y="59" text-anchor="middle">same PostgreSQL txn as metadata</text>
+                  <rect class="d-box" x="368" y="24" width="120" height="46" rx="3"/><text class="d-txt" x="428" y="43" text-anchor="middle">Dispatcher</text><text class="d-note" x="428" y="59" text-anchor="middle">at-least-once</text>
+                  <rect class="d-box" x="536" y="24" width="92" height="46" rx="3"/><text class="d-txt" x="582" y="43" text-anchor="middle">Disk daemons</text><text class="d-note" x="582" y="59" text-anchor="middle">chunk deletes</text>
+                  <line class="d-line" x1="102" y1="47" x2="148" y2="47" marker-end="url(#arC)"/>
+                  <line class="d-line" x1="320" y1="47" x2="366" y2="47" marker-end="url(#arC)"/>
+                  <line class="d-line" x1="488" y1="47" x2="534" y2="47" marker-end="url(#arC)"/>
+                  <rect class="d-box" x="150" y="110" width="170" height="40" rx="3"/><text class="d-txt" x="235" y="127" text-anchor="middle">Disk scanner</text><text class="d-note" x="235" y="142" text-anchor="middle">chunks vs metadata</text>
+                  <polyline class="d-line dash" points="582,70 582,130 322,130" marker-end="url(#arC)"/>
+                  <polyline class="d-line dash" points="150,130 120,130 120,47 104,47"/>
+                  <text class="d-note" x="12" y="134">orphans requeued</text>
+                  <text class="d-note" x="440" y="124">crash-safe at every arrow</text>
+                </svg>
+                <figcaption class="cap">Delete path. Survives a crash at any arrow.</figcaption>
+              </figure>
+            </div>
+            <div class="tags"><span class="tag hi">C</span><span class="tag">Python</span><span class="tag hi">PostgreSQL · Patroni</span><span class="tag">liberasurecode · RS 4+2</span><span class="tag">Helm</span><span class="tag">O_DIRECT</span><span class="tag">S3</span></div>
+          </article>
+
+          <article class="stop">
+            <div class="stop-head"><h3>Rakuten Symphony (Robin.io), MDCAP</h3><span class="when">2022 to 2024 · Pune</span></div>
+            <p class="role">Platform engineering on a metal-to-service orchestration engine, the execution layer behind Rakuten Symphony's Automation Studio.</p>
+            <ul>
+              <li><strong>Cut the core engine image by 90%</strong>, from 1.78 GB to 180 MB, with a multi-stage build shipping PyInstaller binaries on minimal Alpine, closing a customer security escalation.</li>
+              <li><strong>Extended the declarative DAG workflow engine</strong> with serial and parallel loop unrolling and task grouping, then built a 55-step resumable migration from Cisco VIM to Robin's platform.</li>
+              <li><strong>Fleet-scale fixes:</strong> dashboard aggregation using planner estimates above 10,000 rows, least-privilege RBAC via CRUD bitmaps in JWT claims for 1,000+ clients, token-gated browser access to servers and BMCs, Amazon EKS onboarding beside on-prem clusters.</li>
+            </ul>
+            <div class="diagrams">
+              <figure class="diag">
+                <svg viewBox="0 0 640 150" role="img" aria-label="Workflow DSL compiled by a DAG engine into tasks executed on Kubernetes worker pods against bare-metal servers and Kubernetes clusters">
+                  <defs><marker id="arD" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path class="d-arrow" d="M0 0 L8 4 L0 8 z"/></marker></defs>
+                  <rect class="d-box" x="12" y="52" width="120" height="46" rx="3"/><text class="d-txt" x="72" y="71" text-anchor="middle">Workflow DSL</text><text class="d-note" x="72" y="87" text-anchor="middle">declarative, 55 steps</text>
+                  <rect class="d-box hi" x="180" y="52" width="150" height="46" rx="3"/><text class="d-txt" x="255" y="71" text-anchor="middle">DAG engine</text><text class="d-note" x="255" y="87" text-anchor="middle">loops unrolled · pause / resume</text>
+                  <rect class="d-box" x="378" y="52" width="110" height="46" rx="3"/><text class="d-txt" x="433" y="71" text-anchor="middle">Worker pods</text><text class="d-note" x="433" y="87" text-anchor="middle">Kubernetes</text>
+                  <rect class="d-box" x="536" y="18" width="92" height="40" rx="3"/><text class="d-txt" x="582" y="35" text-anchor="middle">Bare metal</text><text class="d-note" x="582" y="50" text-anchor="middle">Day-0 to Day-2</text>
+                  <rect class="d-box" x="536" y="92" width="92" height="40" rx="3"/><text class="d-txt" x="582" y="109" text-anchor="middle">K8s clusters</text><text class="d-note" x="582" y="124" text-anchor="middle">on-prem + EKS</text>
+                  <line class="d-line" x1="132" y1="75" x2="178" y2="75" marker-end="url(#arD)"/>
+                  <line class="d-line" x1="330" y1="75" x2="376" y2="75" marker-end="url(#arD)"/>
+                  <polyline class="d-line" points="488,75 512,75 512,38 534,38" marker-end="url(#arD)"/>
+                  <polyline class="d-line" points="512,75 512,112 534,112" marker-end="url(#arD)"/>
+                </svg>
+                <figcaption class="cap">55 steps. Pause, resume, finish.</figcaption>
+              </figure>
+            </div>
+            <div class="tags"><span class="tag hi">Python · Sanic</span><span class="tag">asyncpg · PostgreSQL</span><span class="tag hi">Kubernetes</span><span class="tag">Docker · PyInstaller</span><span class="tag">AWS EKS</span><span class="tag">JWT · RBAC</span></div>
+          </article>
+
+          <article class="stop">
+            <div class="stop-head"><h3>IEEE ICCUBEA 2022</h3><span class="when">Aug 2022 · Pune</span></div>
+            <p class="role">First-author paper: Electronic Health Record Management using Hyperledger Fabric</p>
+            <ul><li>A patient-controlled record system on a permissioned ledger: patients grant and revoke doctors' access, every update is immutable, and records follow the patient across hospitals. <a href="https://ieeexplore.ieee.org/document/10010988" target="_blank" rel="noopener">IEEE Xplore</a></li></ul>
+          </article>
+
+          <article class="stop">
+            <div class="stop-head"><h3>AlgoAnalytics</h3><span class="when">Jul to Aug 2021 · Pune</span></div>
+            <p class="role">Research Intern, Cloud</p>
+            <ul><li>Compared AWS, Azure, and Google Cloud for hosting the company's ML models and mapped competitor architectures in finance, healthcare, and retail into a gap analysis.</li></ul>
+          </article>
+
+          <article class="stop">
+            <div class="stop-head"><h3>College of Engineering Pune</h3><span class="when">2018 to 2022</span></div>
+            <p class="role">B.Tech, Computer Engineering</p>
+            <ul><li>xv6 schedulers, a Linux shell in C, a multithreaded HTTP/1.1 server, a multithreaded grep, a fake-news classifier.</li></ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact">
+      <div class="inner">
+        <div class="sec-title"><h2>Contact</h2><p>Based in Abu Dhabi, open to relocation and travel.</p></div>
+        <div class="crows">
+          <div class="crow"><span class="ck">Mail</span><code id="email-text">rohitkota1999@gmail.com</code><button class="btn copy" type="button" data-copy="rohitkota1999@gmail.com" data-target="email-text">Copy</button></div>
+          <div class="crow"><span class="ck">Tel</span><code id="tel-text">+971 52 152 3965</code><button class="btn copy" type="button" data-copy="+971521523965" data-target="tel-text">Copy</button></div>
+          <div class="crow"><span class="ck">GitHub</span><a href="https://github.com/rohitkota007" target="_blank" rel="noopener">github.com/rohitkota007</a><span></span></div>
+          <div class="crow"><span class="ck">Resume</span><a href="Rohit_Kota_Resume.pdf?v=20261006" target="_blank" rel="noopener">Rohit_Kota_Resume.pdf</a><span></span></div>
+        </div>
+        <span class="copied" id="copied" aria-live="polite"></span>
+      </div>
+    </section>
+
+    <footer>
+      <span>Rohit Kota · Abu Dhabi, UAE</span>
+      <span>Updated October 2026</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+  (function () {
+    /* Copy buttons (email, phone) */
+    var note = document.getElementById("copied");
+    function flash(msg) { if (!note) return; note.textContent = msg; setTimeout(function () { note.textContent = ""; }, 2200); }
+    function selectText(id) {
+      var el = document.getElementById(id); if (!el || !window.getSelection) return;
+      var r = document.createRange(); r.selectNodeContents(el);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    }
+    Array.prototype.forEach.call(document.querySelectorAll("button.copy"), function (b) {
+      b.addEventListener("click", function () {
+        var value = b.getAttribute("data-copy"), target = b.getAttribute("data-target");
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(value).then(function () { flash("Copied " + value); }, function () { selectText(target); flash("Select and copy"); });
+        } else { selectText(target); flash("Select and copy"); }
+      });
+    });
+
+    /* Contents list tracks the section in view */
+    var links = Array.prototype.slice.call(document.querySelectorAll("#toc a[data-sec]"));
+    var byId = {};
+    links.forEach(function (a) { byId[a.getAttribute("data-sec")] = a; });
+    var targets = links.map(function (a) { return document.getElementById(a.getAttribute("data-sec")); }).filter(Boolean);
+    function setActive(id) {
+      links.forEach(function (a) { a.classList.toggle("active", a.getAttribute("data-sec") === id); });
+    }
+    if ("IntersectionObserver" in window && targets.length) {
+      var visible = {};
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { visible[e.target.id] = e.isIntersecting ? e.boundingClientRect.top : null; });
+        var best = null, bestTop = Infinity;
+        Object.keys(visible).forEach(function (id) {
+          var t = visible[id]; if (t === null || t === undefined) return;
+          var d = Math.abs(t - 120); if (d < bestTop) { bestTop = d; best = id; }
+        });
+        if (best) setActive(best);
+      }, { rootMargin: "-100px 0px -55% 0px", threshold: [0, 0.1, 0.5] });
+      targets.forEach(function (t) { io.observe(t); });
+    }
+    setActive("home");
+  })();
+</script>
